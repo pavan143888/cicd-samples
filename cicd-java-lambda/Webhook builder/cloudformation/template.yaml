@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+    AwsNamespace:
+        Type: String
+        Description: Used to generate namespaced AWS resources
+Resources:
+    LambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    -   Effect: Allow
+                        Principal:
+                            Service:
+                                - lambda.amazonaws.com
+                        Action:
+                            - sts:AssumeRole
+            Policies:
+                -   PolicyName: allowLambdaLogs
+                    PolicyDocument:
+                        Version: '2012-10-17'
+                        Statement:
+                            -   Effect: Allow
+                                Action:
+                                    - logs:*
+                                Resource: arn:aws:logs:*:*:*
+                -   PolicyName: allowSqs
+                    PolicyDocument:
+                        Version: '2012-10-17'
+                        Statement:
+                            -   Effect: Allow
+                                Action:
+                                    - sqs:ReceiveMessage
+                                    - sqs:DeleteMessage
+                                    - sqs:GetQueueAttributes
+                                    - sqs:ChangeMessageVisibility
+                                Resource: !GetAtt MyQueue.Arn
+                -   PolicyName: allowCodeBuildToStart
+                    PolicyDocument:
+                        Version: '2012-10-17'
+                        Statement:
+                             -  Effect: Allow
+                                Action:
+                                    - codebuild:StartBuild
+                                Resource: '*'
+    LambdaFunction:
+        Type: 'AWS::Serverless::Function'
+        Properties:
+            FunctionName: !Sub test-cicd-webhook-builder-java
+            Handler: index.handler
+            Role: !GetAtt LambdaExecutionRole.Arn
+            Runtime: nodejs10.x
+            CodeUri: ../dist
+            MemorySize: 192
+            Timeout: 30
+            Policies:
+                - Version: '2012-10-17'
+                  Statement:
+                      - Effect: Allow
+                        Action:
+                            - "logs:CreateLogGroup"
+                            - "logs:CreateLogStream"
+                            - "logs:PutLogEvents"
+                            - "ssm:DescribeParameters"
+                            - "ssm:PutParameter"
+                            - "ssm:GetParameterHistory"
+                            - "ssm:GetParametersByPath"
+                            - "ssm:GetParameters"
+                            - "ssm:GetParameter"
+                        Resource: '*'
+    MyQueue:
+        Type: AWS::SQS::Queue
+        Properties:
+            QueueName: "test-cicd-queue-java"
+            DelaySeconds: 0
+            VisibilityTimeout: 120
+    LambdaFunctionEventSourceMapping:
+        Type: AWS::Lambda::EventSourceMapping
+        Properties:
+            BatchSize: 10
+            Enabled: true
+            EventSourceArn: !GetAtt MyQueue.Arn
+            FunctionName: !GetAtt LambdaFunction.Arn

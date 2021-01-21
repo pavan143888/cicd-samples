@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - For testing purpose i didn't gave commands
+  build:
+    commands:
+      - cd cicd-nodejs-lambda/SimpleLamdba
+      - npm i
+      - npm run tsc
+      - cp -R ./node_modules ./dist
+  post_build:
+    commands:
+      - ./cloudformation/buildspec_postbuild.sh

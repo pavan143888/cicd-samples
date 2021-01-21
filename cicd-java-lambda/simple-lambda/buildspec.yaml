@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk8
+    commands:
+      - chmod +x cloudformation/buildspec_postbuild.sh
+      - chmod +x bin/provision.sh
+      - chmod +x bin/deploy.sh
+      - apt-get update -y
+      - apt-get install -y maven
+  pre_build:
+    commands:
+      - java -version
+      - mvn -version
+  build:
+    commands:
+      - cd HelloWorldFunction
+      - mvn install
+      - cd ..
+  post_build:
+    commands:
+      - ./cloudformation/buildspec_postbuild.sh
