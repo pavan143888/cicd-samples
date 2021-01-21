@@ -5,7 +5,7 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:
-      - For testing purpose i didn't gave commands
+      - Testing
   build:
     commands:
       - cd cicd-nodejs-lambda/SimpleLamdba
