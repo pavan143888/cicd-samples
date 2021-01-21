@@ -5,10 +5,11 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:
-      - cd cicd-nodejs-lambda/SimpleLamdba
-      - npm i
+      - echo testing
   build:
     commands:
+      - cd cicd-nodejs-lambda/SimpleLamdba
+      - npm i
       - npm run tsc
       - cp -R ./node_modules ./dist
   post_build:
