@@ -8,7 +8,7 @@ phases:
       - echo testing
   build:
     commands:
-      - cd cicd-nodejs-lambda/SimpleLamdba
+      - cd ./cicd-nodejs-lambda/SimpleLamdba
       - npm i
       - npm run tsc
       - cp -R ./node_modules ./dist
